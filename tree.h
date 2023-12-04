@@ -58,7 +58,7 @@ leaf_t * append_leaves(leaf_t *** leaves, int * m, int * l, tetra_t tetra, int l
         *m += STEP_SIZE;
         *leaves = (leaf_t **) realloc(*leaves, *m * sizeof(leaf_t *));
     }
-    leaf_t * appended = malloc(sizeof(leaf_t));
+    leaf_t * appended = (leaf_t *) malloc(sizeof(leaf_t));
     init_leaf(appended, tetra, lb, rb, lid);
     (*leaves)[*l] = appended;
     *l += 1;

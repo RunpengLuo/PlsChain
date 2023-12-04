@@ -5,6 +5,7 @@
 #include "kmer.h"
 #include "dtype.h"
 #include "tree.h"
+#include "file_io.h"
 
 #include <zlib.h>
 #include <stdio.h>
@@ -42,28 +43,20 @@ int query_file(char * db_dir, char * out_dir, char * query_file) {
 
 	// output
 	FILE *fd_qry_total;
-	int status, out_len;
-    out_len = strlen(out_dir) + strlen("qry_total.csv") + 3;
-    char qry_file[out_len];
-    snprintf(qry_file, out_len, "%s/%s", out_dir, "qry_total.csv");
-	qry_file[out_len-1] = '\0';
-    fd_qry_total = fopen(qry_file, "wb");
-    if(fd_qry_total == NULL) {
-        fprintf(stderr, "Not able to open the output file %s\n", qry_file);
-        return 1;
-    }
+	int status;
 
-    idx_arrs = read_idx_file(db_dir, &num_comp, &sizes);
-    // error handling
-    if (idx_arrs == NULL) {
+	if ((fd_qry_total = open_file(out_dir, "qry_total.csv", "wb")) == NULL) {
+		return 1;
+	}
+
+    if ((idx_arrs = read_idx_file(db_dir, &num_comp, &sizes)) == NULL) {
         fclose(fd_qry_total);
         return 1;
     }
 
     ukmer_table = kh_init(1);
-    status = read_udb_file(db_dir, &k, ukmer_table);
     // error handling
-    if (status == 1){
+    if ((status = read_udb_file(db_dir, &k, ukmer_table)) == 1){
         fclose(fd_qry_total);
         kh_destroy(1, ukmer_table);
         free_idx_arrs(idx_arrs, sizes, num_comp);
@@ -71,8 +64,7 @@ int query_file(char * db_dir, char * out_dir, char * query_file) {
     }
 
     // process query
-    fp = gzopen(query_file, "r");
-    if (fp == Z_NULL) {
+    if ((fp = gzopen(query_file, "r")) == Z_NULL) {
         fclose(fd_qry_total);
         fprintf(stderr, "Not able to open the component file %s\n", query_file);
         kh_destroy(1, ukmer_table);
@@ -91,7 +83,7 @@ int query_file(char * db_dir, char * out_dir, char * query_file) {
         if (status != 1) {
             fprintf(fd_qry_total, ",fail\n");
         } else {
-	    rclassified ++;
+	        rclassified ++;
             for (int i = 0; i < res->l; i ++){
                 ia = (res->tetras)[i].ia;
                 ja = (res->tetras)[i].ja;
@@ -134,23 +126,16 @@ void free_idx_arrs(char *** idx_arrs, int * sizes, int num_comp){
 
 char *** read_idx_file(char * db_dir, int * num_comp, int ** sizes){
     int i, j, s;
-    char *** idx_arrs;
-
-    int idx_len = strlen(db_dir) + strlen("comps_idx.txt") + 3;
-    char idx_file[idx_len];
-    snprintf(idx_file, idx_len, "%s/%s", db_dir, "comps_idx.txt");
-    idx_file[idx_len-1]='\0';
+    char *** idx_arrs = NULL;
 
     FILE *fd_idx;
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
 
-    fd_idx = fopen(idx_file, "rb");
-    if(fd_idx == NULL) {
-        fprintf(stderr, "Not able to open the idx file %s\n", idx_file);
-        return NULL;
-    }
+	if ((fd_idx = open_file(db_dir, "comps_idx.txt", "rb")) == NULL) {
+		return NULL;
+	}
 
     i = 0;
     read = getline(&line, &len, fd_idx); // get first line
@@ -205,16 +190,9 @@ int read_udb_file(char * db_dir, size_t * k, khash_t(1) * ukmer_table){
     int absent;
     char *token;
 
-    int udb_len = strlen(db_dir) + strlen("comps_udb.txt") + 3;
-    char udb_file[udb_len];
-    snprintf(udb_file, udb_len, "%s/%s", db_dir, "comps_udb.txt");
-    udb_file[udb_len-1]='\0';
-
-    fd_udb = fopen(udb_file, "rb");
-    if(fd_udb == NULL) {
-        fprintf(stderr, "Not able to open the idx file %s\n", udb_file);
-        return 1;
-    }
+	if ((fd_udb = open_file(db_dir, "comps_udb.txt", "rb")) == NULL) {
+		return 1;
+	}
 
     read = getline(&line, &len, fd_udb); // get first line
     line[read - 1] = '\0';

@@ -4,6 +4,7 @@
 #include "khash.h"
 #include "kmer.h"
 #include "dtype.h"
+#include "file_io.h"
 
 #include <zlib.h>
 #include <stdio.h>
@@ -77,7 +78,7 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 	// output
 	FILE *fd_idx;
 	FILE *fd_udb;
-	int slen;
+	FILE *fd_nme;
 
     // build hash table
 	if (k < 15 || k > 32) {
@@ -86,18 +87,17 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 	}
 	ukmer_table = kh_init(0);
 
-	slen = strlen(out_dir) + strlen("comps_xyz.txt") + 3;
-	char out_file[slen];
+	if ((fd_idx = open_file(out_dir, "comps_idx.txt", "wb")) == NULL) {
+		return 1;
+	}
 
-	snprintf(out_file, slen, "%s/%s", out_dir, "comps_idx.txt");
-	out_file[slen-1] = '\0';
-	fd_idx = fopen(out_file, "wb");
-	if(fd_idx == NULL) {
-        fprintf(stderr, "Not able to open the output file %s\n", out_file);
-        return 1;
-    }
+	if ((fd_nme = open_file(out_dir, "comps_nme.txt", "wb")) == NULL) {
+		return 1;
+	}
+
 	fprintf(fd_idx, "%d\n", num_comp);
 	for (int i = 0; i < num_comp; i ++){
+		fprintf(fd_nme, "%s\n", comp_files[i]);
 		comp_idx = i;
 		s_idx = 0;
 		/* parsing the file */
@@ -126,14 +126,9 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 		gzclose(fp);
 	}
 
-    out_file[0] = '\0';
-	snprintf(out_file, slen, "%s/%s", out_dir, "comps_udb.txt");
-	out_file[slen-1] = '\0';
-	fd_udb = fopen(out_file, "wb");
-	if(fd_udb == NULL) {
-        fprintf(stderr, "Not able to open the output file %s\n", out_file);
-        return 1;
-    }
+	if ((fd_udb = open_file(out_dir, "comps_udb.txt", "wb")) == NULL) {
+		return 1;
+	}
 
     fprintf(fd_udb, "%zu\n", k);
 	for (kh = 0; kh < kh_end(ukmer_table); kh ++) {
@@ -150,6 +145,7 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 
 	// clean up
 	fclose(fd_idx);
+	fclose(fd_nme);
 	fclose(fd_udb);
 	kh_destroy(0, ukmer_table);
 
