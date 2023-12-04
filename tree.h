@@ -1,5 +1,5 @@
-#ifndef PLS_CLASS_TREE_H
-#define PLS_CLASS_TREE_H
+#ifndef PLS_CHAIN_TREE_H
+#define PLS_CHAIN_TREE_H
 #include "dtype.h"
 #include <stdio.h>
 

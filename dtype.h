@@ -1,11 +1,8 @@
-#ifndef PLS_CLASS_DTYPE_H
-#define PLS_CLASS_DTYPE_H
+#ifndef PLS_CHAIN_DTYPE_H
+#define PLS_CHAIN_DTYPE_H
 #include <zlib.h>
 
 #include "khash.h"
-#include "kseq.h"
-
-KSEQ_INIT(gzFile, gzread)
 
 #define MIN(a,b)        (((a)<(b))?(a):(b))
 #define MAX(a,b)        (((a)>(b))?(a):(b))

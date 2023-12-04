@@ -1,5 +1,5 @@
-#ifndef PLS_CLASS_KMER_H
-#define PLS_CLASS_KMER_H
+#ifndef PLS_CHAIN_KMER_H
+#define PLS_CHAIN_KMER_H
 #include "khash.h"
 
 // A	065	01000001

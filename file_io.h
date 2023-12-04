@@ -1,5 +1,5 @@
-#ifndef PLS_CLASS_FILE_IO_H
-#define PLS_CLASS_FILE_IO_H
+#ifndef PLS_CHAIN_FILE_IO_H
+#define PLS_CHAIN_FILE_IO_H
 
 #include <zlib.h>
 #include <stdio.h>
@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <fcntl.h>
+
+#include "kseq.h"
+KSEQ_INIT(gzFile, gzread)
 
 // assert op_dir doesn't end with '/', and op_dir is created already
 FILE * open_file(char * op_dir, char * op_file, const char * __restrict op_mode) {

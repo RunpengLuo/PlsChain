@@ -1,5 +1,5 @@
-#ifndef PLS_CLASS_INDEX_H
-#define PLS_CLASS_INDEX_H
+#ifndef PLS_CHAIN_INDEX_H
+#define PLS_CHAIN_INDEX_H
 #include "kseq.h"
 #include "khash.h"
 #include "kmer.h"

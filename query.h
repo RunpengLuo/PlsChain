@@ -1,5 +1,5 @@
-#ifndef PLS_CLASS_QUERY_H
-#define PLS_CLASS_QUERY_H
+#ifndef PLS_CHAIN_QUERY_H
+#define PLS_CHAIN_QUERY_H
 #include "kseq.h"
 #include "khash.h"
 #include "kmer.h"
