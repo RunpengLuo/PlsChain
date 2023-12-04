@@ -1,6 +1,11 @@
+.DS_Store
 *.dSYM
 tmp
 .vscode
 *.sh
 k21*
 sim*
+result*
+*/__pycache__*
+*.txt
+*.fasta

@@ -42,7 +42,6 @@ if __name__ == "__main__":
                 rseq_dicts[ri][sid] = seq
             ri += 1
         rname_fd.close()
-    print([sx.keys() for sx in rseq_dicts])
 
     idx_arrs = read_idx_file(idx_dir + "comps_idx.txt")
 

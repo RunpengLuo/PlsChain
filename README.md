@@ -17,7 +17,9 @@ PlsChain is an algorithm to classify noisy reads (~5% error rate) sequenced from
 ## Installation
 The program is designated for Unix-like system (Linux & MacOS), C compiler, GNU make and zlib development files are required to compile the program.
 
-To run the python script `groupby.py` for grouping the results, python module pandas is recommended (optional).
+Run the python script `plschain_groupby.py` for grouping the results.
+
+Run the python script `pls_chain_simulator.py` for reads simulations. (TBA)
 
 ## Program Usage
 ```sh

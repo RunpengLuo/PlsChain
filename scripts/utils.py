@@ -44,7 +44,7 @@ def get_fasta(fasta_file: str):
                 # process previous entry
                 if sid != "":
                     res.append((sid, seq))
-                sid = line.strip().split("\t")[0][1:]
+                sid = line.strip().replace(' ', '\t').split("\t")[0][1:]
                 seq = ""
             else:
                 seq += line.strip()
@@ -69,7 +69,7 @@ def get_fastq(fastq_file: str):
                     reads.append((prev_id, prev_seq))
                 
                 # read id, get first non-space id, without @ symbol
-                prev_id = l.strip().split("\t")[0][1:]
+                prev_id = l.strip().replace(' ', '\t').split("\t")[0][1:]
                 prev_seq = ""
             elif i == 1:
                 prev_seq += l.strip()
