@@ -38,17 +38,17 @@ int ieq_item(item_t * item, tuple_t value){
 }
 
 typedef struct _tetra_t {
-	int ia;
-	int ja;
-	int a_jdx;
+	int alpha;
+	int beta;
+	int q_pos;
 	int count;
 } tetra_t;
 
-void init_tetra(tetra_t * tetra, int ia, int ja, int a_jdx, int count){
-	tetra->ia = ia;
-	tetra->ja = ja;
-	tetra->a_jdx = a_jdx;
-	tetra->count = count;
+void init_tetra(tetra_t * tetra, int alpha, int beta, int q_pos, int count){
+	tetra->alpha = alpha; // i
+	tetra->beta = beta; // j
+	tetra->q_pos = q_pos; // q
+	tetra->count = count; // c
 }
 
 typedef struct _layer_t {
@@ -56,7 +56,7 @@ typedef struct _layer_t {
 	tetra_t * tetras;
 } layer_t;
 
-void append_layer(layer_t * layer, item_t item, int a_jdx){
+void append_layer(layer_t * layer, item_t item, int q_pos){
 	if (layer->m == 0) {
 		layer->m = ARR_SIZE;
 		layer->tetras = (tetra_t *) calloc(layer->m, sizeof(tetra_t));
@@ -65,7 +65,7 @@ void append_layer(layer_t * layer, item_t item, int a_jdx){
 		layer->m += STEP_SIZE;
 		layer->tetras = (tetra_t *) realloc(layer->tetras, layer->m *sizeof(tetra_t));
 	}
-	layer->tetras[layer->l] = (tetra_t) {item.value.comp_idx, item.value.s_idx, a_jdx, item.count};
+	layer->tetras[layer->l] = (tetra_t) {item.value.comp_idx, item.value.s_idx, q_pos, item.count};
 	layer->l ++;
 }
 

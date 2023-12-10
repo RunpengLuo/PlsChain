@@ -74,7 +74,7 @@ int query_file(char * db_dir, char * out_dir, char * query_file) {
 
     seq = kseq_init(fp);
     layer_t * res = NULL;
-    int ia, ja;
+    int alpha, beta;
     int rcount = 0, rclassified = 0;
     while ((l = kseq_read(seq)) >= 0) {
         rcount ++;
@@ -85,10 +85,10 @@ int query_file(char * db_dir, char * out_dir, char * query_file) {
         } else {
 	        rclassified ++;
             for (int i = 0; i < res->l; i ++){
-                ia = (res->tetras)[i].ia;
-                ja = (res->tetras)[i].ja;
+                alpha = (res->tetras)[i].alpha;
+                beta = (res->tetras)[i].beta;
 
-                fprintf(fd_qry_total, ",%s", idx_arrs[ia][ja]);
+                fprintf(fd_qry_total, ",%s", idx_arrs[alpha][beta]);
             }
             fprintf(fd_qry_total, "\n");
             free(res->tetras);
@@ -225,7 +225,7 @@ int read_udb_file(char * db_dir, size_t * k, khash_t(1) * ukmer_table){
 // status = 2 if error, 1 if success, 0 if fail
 layer_t * proc_query(kseq_t * seq, size_t k, int num_comp, khash_t(1) * ukmer_table, char *** idx_arrs, int * status){
     *status = 0;
-    int i, len, a_jdx;
+    int i, len, q_pos;
 	khint64_t key, mask;
 	
 	khiter_t kh;
@@ -295,11 +295,11 @@ layer_t * proc_query(kseq_t * seq, size_t k, int num_comp, khash_t(1) * ukmer_ta
         layers[i].tetras = NULL;
     }
 
-    int ia;
-    for (a_jdx = 0; a_jdx < a_idx + 1; a_jdx ++) {
-        item = arraylist[a_jdx];
-        ia = item.value.comp_idx;
-        append_layer(&layers[ia], item, a_jdx);
+    int alpha;
+    for (q_pos = 0; q_pos < a_idx + 1; q_pos ++) {
+        item = arraylist[q_pos];
+        alpha = item.value.comp_idx;
+        append_layer(&layers[alpha], item, q_pos);
     }
     free(arraylist);
 

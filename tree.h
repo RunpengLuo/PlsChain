@@ -8,7 +8,6 @@ typedef struct _leaf_t {
     int lid;
     int lb;
     int rb;
-    int rotated;
     struct _leaf_t * parent;
     struct _leaf_t ** children;
     size_t l, m;
@@ -19,20 +18,11 @@ void init_leaf(leaf_t * leaf, tetra_t tetra, int lb, int rb, int lid) {
     leaf->lb = lb;
     leaf->rb = rb;
     leaf->lid = lid;
-    leaf->rotated = false;
 
     leaf->parent = NULL;
     leaf->children = NULL;
     leaf->l = 0;
     leaf->m = 0;
-}
-
-int16_t get_rotated(leaf_t * leaf){
-    return leaf->rotated;
-}
-
-void set_rotated(leaf_t * leaf, int val){
-    leaf->rotated = val;
 }
 
 typedef struct _tree_t {
@@ -93,39 +83,25 @@ int append_tree(tree_t * tree, layer_t * layer) {
     for (int i = 0; i < layer->l; i ++) {
         lid = 0;
         for (int j = 0; j < tree->l; j ++) {
+            new_leaf = NULL;
             old_leaf = tree->leaves[j];
-            prev_s = old_leaf->tetra.a_jdx;
-            next_s = layer->tetras[i].a_jdx;
-            if (get_rotated(old_leaf)) {
-                if ((next_s > old_leaf->lb) && (next_s < old_leaf->rb)){
-                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], MAX(old_leaf->lb, next_s), old_leaf->rb, lid);
-                    set_rotated(new_leaf, true);
-                    
-                    lid ++;
-                    new_leaf->parent = old_leaf;
-                    append_children(old_leaf, new_leaf);
-                }
+            prev_s = old_leaf->tetra.q_pos;
+            next_s = layer->tetras[i].q_pos;
+            if (prev_s == -1) {
+                // previous layer is root only
+                new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, next_s, lid);
             } else {
-                if (next_s > prev_s) {
-                    if (prev_s == -1){
-                        new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, next_s, lid);
-                    } else {
-                        new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], old_leaf->lb, old_leaf->rb, lid);
-                    }
-
-                    lid ++;
-                    new_leaf->parent = old_leaf;
-                    append_children(old_leaf, new_leaf);
-                } else if ((next_s > old_leaf->lb && next_s < old_leaf->rb)){ // rotate
-                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], MAX(old_leaf->lb, next_s), old_leaf->rb, lid);
-                    set_rotated(new_leaf, true);
-
-                    lid ++;
-                    new_leaf->parent = old_leaf;
-                    append_children(old_leaf, new_leaf);
-                } else {
-                    // do nothing
+                // previous layer is intermediate layer
+                if ((next_s > old_leaf->lb) && (next_s < old_leaf->rb)){
+                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], next_s, old_leaf->rb, lid);
+                } else if ((old_leaf->lb == -1) && (next_s > prev_s)) {
+                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, old_leaf->rb, lid);
                 }
+            }
+            if (new_leaf != NULL) {
+                lid ++;
+                new_leaf->parent = old_leaf;
+                append_children(old_leaf, new_leaf);
             }
         }
     }
