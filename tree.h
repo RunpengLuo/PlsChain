@@ -5,7 +5,6 @@
 
 typedef struct _leaf_t {
     tetra_t tetra;
-    int lid;
     int lb;
     int rb;
     struct _leaf_t * parent;
@@ -13,11 +12,10 @@ typedef struct _leaf_t {
     size_t l, m;
 } leaf_t;
 
-void init_leaf(leaf_t * leaf, tetra_t tetra, int lb, int rb, int lid) {
+void init_leaf(leaf_t * leaf, tetra_t tetra, int lb, int rb) {
     leaf->tetra = tetra;
     leaf->lb = lb;
     leaf->rb = rb;
-    leaf->lid = lid;
 
     leaf->parent = NULL;
     leaf->children = NULL;
@@ -32,14 +30,14 @@ typedef struct _tree_t {
 } tree_t;
 
 void init_tree(tree_t * tree) {
-    init_leaf(&(tree->root), (tetra_t) {-1, -1, -1, -1}, -1, -1, 0);
+    init_leaf(&(tree->root), (tetra_t) {-1, -1, -1, -1}, -1, -1);
     tree->m = 1;
     tree->leaves = (leaf_t **) malloc(sizeof(leaf_t *));
     tree->l = 1;
     tree->leaves[0] = &tree->root;
 }
 
-leaf_t * append_leaves(leaf_t *** leaves, int * m, int * l, tetra_t tetra, int lb, int rb, int lid){
+leaf_t * append_leaves(leaf_t *** leaves, int * m, int * l, tetra_t tetra, int lb, int rb){
     if (*m == 0) {
         *m = ARR_SIZE;
         *leaves = (leaf_t **) calloc(*m, sizeof(leaf_t *));
@@ -49,7 +47,7 @@ leaf_t * append_leaves(leaf_t *** leaves, int * m, int * l, tetra_t tetra, int l
         *leaves = (leaf_t **) realloc(*leaves, *m * sizeof(leaf_t *));
     }
     leaf_t * appended = (leaf_t *) malloc(sizeof(leaf_t));
-    init_leaf(appended, tetra, lb, rb, lid);
+    init_leaf(appended, tetra, lb, rb);
     (*leaves)[*l] = appended;
     *l += 1;
     return appended;
@@ -78,10 +76,8 @@ int append_tree(tree_t * tree, layer_t * layer) {
     leaf_t * old_leaf;
     leaf_t * new_leaf;
     int prev_s, next_s;
-    int lid;
 
     for (int i = 0; i < layer->l; i ++) {
-        lid = 0;
         for (int j = 0; j < tree->l; j ++) {
             new_leaf = NULL;
             old_leaf = tree->leaves[j];
@@ -89,17 +85,16 @@ int append_tree(tree_t * tree, layer_t * layer) {
             next_s = layer->tetras[i].q_pos;
             if (prev_s == -1) {
                 // previous layer is root only
-                new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, next_s, lid);
+                new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, next_s);
             } else {
                 // previous layer is intermediate layer
                 if ((next_s > old_leaf->lb) && (next_s < old_leaf->rb)){
-                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], next_s, old_leaf->rb, lid);
+                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], next_s, old_leaf->rb);
                 } else if ((old_leaf->lb == -1) && (next_s > prev_s)) {
-                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, old_leaf->rb, lid);
+                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, old_leaf->rb);
                 }
             }
             if (new_leaf != NULL) {
-                lid ++;
                 new_leaf->parent = old_leaf;
                 append_children(old_leaf, new_leaf);
             }
