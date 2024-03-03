@@ -29,8 +29,12 @@ typedef struct _tree_t {
     size_t l, m;
 } tree_t;
 
+tetra_t null_tetra(){
+    return (tetra_t) {-1, -1, -1, -1};
+}
+
 void init_tree(tree_t * tree) {
-    init_leaf(&(tree->root), (tetra_t) {-1, -1, -1, -1}, -1, -1);
+    init_leaf(&(tree->root), null_tetra(), -1, -1);
     tree->m = 1;
     tree->leaves = (leaf_t **) malloc(sizeof(leaf_t *));
     tree->l = 1;
@@ -67,9 +71,9 @@ void append_children(leaf_t * node, leaf_t * child){
 }
 
 int append_tree(tree_t * tree, layer_t * layer) {
-    if (tree->l == 0) { // invalid tree
-        return false;
-    }
+    // if (tree->l == 0) { // invalid tree
+    //     return false;
+    // }
 
     int m = 0, l = 0;
     leaf_t ** new_leaves = NULL;
@@ -103,21 +107,32 @@ int append_tree(tree_t * tree, layer_t * layer) {
 
     if (l == 0) {
         // no new leaves be found
-        tree->l = 0;
-        free(tree->leaves);
-        tree->leaves = NULL;
-        return false;
-    } else {
-        if (tree->m < m) {
-            tree->leaves = (leaf_t **) realloc(tree->leaves, m*sizeof(leaf_t *));
-            tree->m = m;
+        // append NULL leaves to previous layer to emulate the missing part, 
+        // inhert info from previous layer such as qpos, lb, rb
+        for (int j = 0; j < tree->l; j ++) {
+            old_leaf = tree->leaves[j];
+            new_leaf = append_leaves(&new_leaves, &m, &l, null_tetra(), old_leaf->lb, old_leaf->rb);
+            new_leaf->tetra.q_pos = old_leaf->tetra.q_pos;
+            new_leaf->parent = old_leaf;
+            append_children(old_leaf, new_leaf);
         }
-        memset(tree->leaves, 0, tree->m * sizeof(leaf_t *));
-        tree->l = l;
-        memcpy(tree->leaves, new_leaves, tree->l * sizeof(leaf_t *));
-        free(new_leaves);
-        return true;
     }
+    //     tree->l = 0;
+    //     free(tree->leaves);
+    //     tree->leaves = NULL;
+    //     return false;
+    // } else {
+
+    if (tree->m < m) {
+        tree->leaves = (leaf_t **) realloc(tree->leaves, m*sizeof(leaf_t *));
+        tree->m = m;
+    }
+    memset(tree->leaves, 0, tree->m * sizeof(leaf_t *));
+    tree->l = l;
+    memcpy(tree->leaves, new_leaves, tree->l * sizeof(leaf_t *));
+    free(new_leaves);
+    return true;
+    // }
 }
 
 tetra_t * tree_traverse(leaf_t * leaf, int * m, int * l, int * w){

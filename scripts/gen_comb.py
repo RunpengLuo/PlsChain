@@ -19,16 +19,17 @@ if __name__ == "__main__":
         out_prefix = out_prefix[:-1]
 
     rseq_dicts = []
-    with open(idx_dir + "comps_nme.txt", "r") as rname_fd:
-        ri = 0
-        for line in rname_fd:
-            rname = line.strip()
-            data = get_file(rname, True)
+    with open(idx_dir + "comps_nme.txt", "r") as fd_ref:
+        for line in fd_ref:
+            ref_file = line.strip()
             rseq_dicts.append({})
-            for (sid, seq) in data:
-                rseq_dicts[ri][sid] = seq
-            ri += 1
-        rname_fd.close()
+            handle = parse_reads(ref_file)
+            if handle == None:
+                raise Exception(f"{ref_file}, file format un-recognized")
+            for record in handle:
+                rseq_dicts[-1][record.id] = str(record.seq)
+        fd_ref.close()
+
 
     idx_arrs = read_idx_file(idx_dir + "comps_idx.txt")
 
@@ -46,10 +47,14 @@ if __name__ == "__main__":
                 comb_seqs = []
                 for idx, jdx in enumerate(comb):
                     sid = idx_arrs[idx][jdx]
-                    seq = rseq_dicts[idx][sid]
-
                     comb_names.append(sid)
-                    comb_seqs.append(seq)
+                
+                # twice the sequence, cyclic
+                for _ in range(2):
+                    for idx, jdx in enumerate(comb):
+                        sid = idx_arrs[idx][jdx]
+                        seq = rseq_dicts[idx][sid]
+                        comb_seqs.append(seq)
 
                 seq_str = "".join(comb_seqs)
                 names_str=",".join(comb_names)

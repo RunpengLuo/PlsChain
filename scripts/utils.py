@@ -1,7 +1,7 @@
 import os
 
 import gzip
-# from Bio import SeqIO
+from Bio import SeqIO
 
 def System(command: str):
     return os.system(command)
@@ -18,6 +18,18 @@ def Create_Dir(dir: str):
     else:
         print(f"Directory: {dir} exists")
         return False
+
+def parse_reads(read_file: str):
+    if read_file.endswith("fastq"):
+        return SeqIO.parse(open(read_file, "r"), "fastq")
+    elif read_file.endswith("fasta"):
+        return SeqIO.parse(open(read_file, "r"), "fasta")
+    elif read_file.endswith("fastq.gz"):
+        return SeqIO.parse(gzip.open(read_file, "rt"), "fastq")
+    elif read_file.endswith("fasta.gz"):
+        return SeqIO.parse(gzip.open(read_file, "rt"), "fasta")
+    else:
+        return None
 
 def line_counter(file: str):
     c = 0

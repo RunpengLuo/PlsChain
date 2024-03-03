@@ -25,7 +25,7 @@ void free_idx_arrs(char *** idx_arrs, int * sizes, int num_comp);
 int read_udb_file(char * db_dir, size_t * k, khash_t(1) * ukmer_table);
 layer_t * proc_query(kseq_t * seq, size_t k, int num_comp, khash_t(1) * ukmer_table, char *** idx_arrs, int * status);
 
-int query_file(char * db_dir, char * out_dir, char * query_file) {
+int query_file(char * db_dir, char * out_dir, char * qry_file) {
     size_t k;
 
 	// seq parsing
@@ -64,9 +64,9 @@ int query_file(char * db_dir, char * out_dir, char * query_file) {
     }
 
     // process query
-    if ((fp = gzopen(query_file, "r")) == Z_NULL) {
+    if ((fp = gzopen(qry_file, "r")) == Z_NULL) {
         fclose(fd_qry_total);
-        fprintf(stderr, "Not able to open the component file %s\n", query_file);
+        fprintf(stderr, "Not able to open the query file %s\n", qry_file);
         kh_destroy(1, ukmer_table);
         free_idx_arrs(idx_arrs, sizes, num_comp);
         return 1;
@@ -78,7 +78,7 @@ int query_file(char * db_dir, char * out_dir, char * query_file) {
     int rcount = 0, rclassified = 0;
     while ((l = kseq_read(seq)) >= 0) {
         rcount ++;
-	res = proc_query(seq, k, num_comp, ukmer_table, idx_arrs, &status);
+	    res = proc_query(seq, k, num_comp, ukmer_table, idx_arrs, &status);
         fprintf(fd_qry_total, "%s", seq->name.s);
         if (status != 1) {
             fprintf(fd_qry_total, ",fail\n");
@@ -87,8 +87,11 @@ int query_file(char * db_dir, char * out_dir, char * query_file) {
             for (int i = 0; i < res->l; i ++){
                 alpha = (res->tetras)[i].alpha;
                 beta = (res->tetras)[i].beta;
-
-                fprintf(fd_qry_total, ",%s", idx_arrs[alpha][beta]);
+                if (alpha == -1 || beta == -1) {
+                    fprintf(fd_qry_total, ",*");
+                } else {
+                    fprintf(fd_qry_total, ",%s", idx_arrs[alpha][beta]);
+                }
             }
             fprintf(fd_qry_total, "\n");
             free(res->tetras);
