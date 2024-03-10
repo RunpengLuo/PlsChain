@@ -135,6 +135,59 @@ int append_tree(tree_t * tree, layer_t * layer) {
     // }
 }
 
+int append_tree_simp(tree_t * tree, layer_t * layer) {
+    if (tree->l == 0) { // invalid tree
+        return false;
+    }
+
+    int m = 0, l = 0;
+    leaf_t ** new_leaves = NULL;
+    leaf_t * old_leaf;
+    leaf_t * new_leaf;
+    int prev_s, next_s;
+
+    for (int i = 0; i < layer->l; i ++) {
+        for (int j = 0; j < tree->l; j ++) {
+            new_leaf = NULL;
+            old_leaf = tree->leaves[j];
+            prev_s = old_leaf->tetra.q_pos;
+            next_s = layer->tetras[i].q_pos;
+            if (prev_s == -1) {
+                // previous layer is root only
+                new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, next_s);
+            } else {
+                // previous layer is intermediate layer
+                if ((next_s > old_leaf->lb) && (next_s < old_leaf->rb)){
+                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], next_s, old_leaf->rb);
+                } else if ((old_leaf->lb == -1) && (next_s > prev_s)) {
+                    new_leaf = append_leaves(&new_leaves, &m, &l, layer->tetras[i], -1, old_leaf->rb);
+                }
+            }
+            if (new_leaf != NULL) {
+                new_leaf->parent = old_leaf;
+                append_children(old_leaf, new_leaf);
+            }
+        }
+    }
+
+    if (l == 0) {
+        tree->l = 0;
+        free(tree->leaves);
+        tree->leaves = NULL;
+        return false;
+    } else {
+        if (tree->m < m) {
+            tree->leaves = (leaf_t **) realloc(tree->leaves, m*sizeof(leaf_t *));
+            tree->m = m;
+        }
+        memset(tree->leaves, 0, tree->m * sizeof(leaf_t *));
+        tree->l = l;
+        memcpy(tree->leaves, new_leaves, tree->l * sizeof(leaf_t *));
+        free(new_leaves);
+        return true;
+    }
+}
+
 tetra_t * tree_traverse(leaf_t * leaf, int * m, int * l, int * w){
     *m = 0;
     *l = 0;

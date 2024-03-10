@@ -79,6 +79,7 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 	FILE *fd_idx;
 	FILE *fd_udb;
 	FILE *fd_nme;
+	FILE *fd_cfg;
 
     // build hash table
 	if (k < 15 || k > 32) {
@@ -95,6 +96,18 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 		return 1;
 	}
 
+	if ((fd_udb = open_file(out_dir, "comps_udb.txt", "wb")) == NULL) {
+		return 1;
+	}
+
+	if ((fd_cfg = open_file(out_dir, "comps_cfg.txt", "wb")) == NULL) {
+		return 1;
+	}
+
+	// record the max component length
+	int per_comp = 0;
+	int total_comp = 0;
+
 	fprintf(fd_idx, "%d\n", num_comp);
 	for (int i = 0; i < num_comp; i ++){
 		fprintf(fd_nme, "%s\n", comp_files[i]);
@@ -109,6 +122,7 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 		}
 		seq = kseq_init(fp);
 		while ((l = kseq_read(seq)) >= 0) {
+			per_comp = seq->seq.l > per_comp ? seq->seq.l : per_comp;
 			fprintf(fd_idx, "%s\n", seq->name.s);
 			ret = kmer_profile(seq, k, comp_idx, s_idx, ukmer_table);
 			if (ret == 1){
@@ -121,14 +135,14 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 			s_idx ++;
 		}
 		fprintf(fd_idx, "\n");
+		total_comp += per_comp;
+		per_comp = 0;
 
 		kseq_destroy(seq);
 		gzclose(fp);
 	}
 
-	if ((fd_udb = open_file(out_dir, "comps_udb.txt", "wb")) == NULL) {
-		return 1;
-	}
+	fprintf(fd_cfg, "%d\n", total_comp);
 
     fprintf(fd_udb, "%zu\n", k);
 	for (kh = 0; kh < kh_end(ukmer_table); kh ++) {
@@ -147,6 +161,7 @@ int indexing(size_t k, int num_comp, char ** comp_files, char * out_dir) {
 	fclose(fd_idx);
 	fclose(fd_nme);
 	fclose(fd_udb);
+	fclose(fd_cfg);
 	kh_destroy(0, ukmer_table);
 
 	return 0;

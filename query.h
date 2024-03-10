@@ -20,6 +20,7 @@
 
 KHASH_MAP_INIT_INT64(1, tuple_t)
 
+int read_cfg_file(char * db_dir);
 char *** read_idx_file(char * db_dir, int * num_comp, int ** sizes);
 void free_idx_arrs(char *** idx_arrs, int * sizes, int num_comp);
 int read_udb_file(char * db_dir, size_t * k, khash_t(1) * ukmer_table);
@@ -40,6 +41,14 @@ int query_file(char * db_dir, char * out_dir, char * qry_file) {
     char *** idx_arrs;
     int * sizes;
     int num_comp;
+
+    // cfg parameters
+    int plasmid_length = read_cfg_file(db_dir);
+    if (plasmid_length < 0){
+        return 1;
+    }
+    int length_upper = 3*plasmid_length;
+    printf("Read Length Upper Bound: %d\n", length_upper);
 
 	// output
 	FILE *fd_qry_total;
@@ -75,12 +84,19 @@ int query_file(char * db_dir, char * out_dir, char * qry_file) {
     seq = kseq_init(fp);
     layer_t * res = NULL;
     int alpha, beta;
-    int rcount = 0, rclassified = 0;
+    int rcount = 0, rclassified = 0, runclassified = 0, rcontamination = 0;
     while ((l = kseq_read(seq)) >= 0) {
         rcount ++;
-	    res = proc_query(seq, k, num_comp, ukmer_table, idx_arrs, &status);
         fprintf(fd_qry_total, "%s", seq->name.s);
+        // pre-filter by read length
+        if (seq->seq.l > length_upper) {
+            rcontamination ++;
+            fprintf(fd_qry_total, ",contamination\n");
+            continue;
+        }
+	    res = proc_query(seq, k, num_comp, ukmer_table, idx_arrs, &status);
         if (status != 1) {
+            runclassified ++;
             fprintf(fd_qry_total, ",fail\n");
         } else {
 	        rclassified ++;
@@ -108,7 +124,11 @@ int query_file(char * db_dir, char * out_dir, char * qry_file) {
     kseq_destroy(seq);
     gzclose(fp);
 
-    printf("Process %d reads, with %d reads been classified\n", rcount, rclassified);
+    printf("Processed: %d reads\n", rcount);
+    printf("[%.2f%%]    Classified: %d\n", (float) 100 * rclassified / rcount, rclassified);
+    printf("[%.2f%%]  Unclassified: %d\n", (float) 100 * runclassified / rcount, runclassified);
+    printf("[%.2f%%] Contamination: %d\n", (float) 100 * rcontamination / rcount, rcontamination);
+
     return 0;
 }
 
@@ -125,6 +145,22 @@ void free_idx_arrs(char *** idx_arrs, int * sizes, int num_comp){
     }
     free(idx_arrs);
     free(sizes);
+}
+
+int read_cfg_file(char * db_dir){
+    FILE *fd_cfg;
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+	if ((fd_cfg = open_file(db_dir, "comps_cfg.txt", "rb")) == NULL) {
+		return -1;
+	}
+
+    read = getline(&line, &len, fd_cfg); // get first line
+    line[read - 1] = '\0';
+    fclose(fd_cfg);
+    return atoi(line);
 }
 
 char *** read_idx_file(char * db_dir, int * num_comp, int ** sizes){
