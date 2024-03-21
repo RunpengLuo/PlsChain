@@ -124,6 +124,7 @@ int query_file(char * db_dir, char * out_dir, char * qry_file) {
     kseq_destroy(seq);
     gzclose(fp);
 
+    printf("Query File: %s\n", qry_file);
     printf("Processed: %d reads\n", rcount);
     printf("[%.2f%%]    Classified: %d\n", (float) 100 * rclassified / rcount, rclassified);
     printf("[%.2f%%]  Unclassified: %d\n", (float) 100 * runclassified / rcount, runclassified);
@@ -158,6 +159,9 @@ int read_cfg_file(char * db_dir){
 	}
 
     read = getline(&line, &len, fd_cfg); // get first line
+    if (read <= 0) {
+        return -1;
+    }
     line[read - 1] = '\0';
     fclose(fd_cfg);
     return atoi(line);

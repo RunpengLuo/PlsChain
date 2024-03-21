@@ -4,8 +4,11 @@ tmp
 .vscode
 *.sh
 k21*
+k15*
 sim*
 result*
 */__pycache__*
 *.txt
 *.fasta
+*/*.tmp
+*/*.ipynb
