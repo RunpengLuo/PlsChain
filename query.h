@@ -150,6 +150,7 @@ void free_idx_arrs(char *** idx_arrs, int * sizes, int num_comp){
 
 int read_cfg_file(char * db_dir){
     FILE *fd_cfg;
+    int ret;
     char *line = NULL;
     size_t len = 0;
     ssize_t read;
@@ -159,10 +160,10 @@ int read_cfg_file(char * db_dir){
 	}
 
     read = getline(&line, &len, fd_cfg); // get first line
-    if (read <= 0) {
-        return -1;
-    }
     line[read - 1] = '\0';
+    ret = atoi(line);
+
+    free(line);
     fclose(fd_cfg);
     return atoi(line);
 }
