@@ -165,7 +165,7 @@ int read_cfg_file(char * db_dir){
 
     free(line);
     fclose(fd_cfg);
-    return atoi(line);
+    return ret;
 }
 
 char *** read_idx_file(char * db_dir, int * num_comp, int ** sizes){
