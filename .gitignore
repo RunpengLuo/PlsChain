@@ -12,3 +12,6 @@ result*
 *.fasta
 */*.tmp
 */*.ipynb
+gadi/
+data/
+all_dataset_output/

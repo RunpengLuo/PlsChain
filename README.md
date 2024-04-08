@@ -2,16 +2,18 @@
 ```sh
 git clone https://github.com/RunpengLuo/PlsChain.git
 cd PlsChain && make
-# create an index for the plasmid library with k=21
-./plschain -i -k 21 -o lib_idx/ backbone.fa promotor.fa peptide.fa gene.fa terminal.fa terminator.fa
+# create an index for the plasmid library with k=15
+./plschain -i -k 15 -o lib_idx/ backbone.fa promotor.fa peptide.fa gene.fa terminal.fa terminator.fa
 # classify the reads against the indexed library
 ./plschain -q lib_idx/ -o qry_res/ query.fastq.gz
-# summarize the classification via python script
-python groupby.py qry_res/
+# perform fuzzy match and group the classification
+python scripts/plschain_postprocess.py qry_res/ lib_idx/
+# plot heatmap accross multiple read sets
+python scripts/plschain_heatmap.py qry_res1/ ... promoter.fasta peptide.fasta terminator.fasta heatmap_prefix
 ```
 
 ## About PlsChain
-PlsChain is an algorithm to classify noisy reads (~5% error rate) sequenced from the plasmid mixtures, it solves the co-linear chaining problem in cyclic manner.
+PlsChain is an algorithm to classify Oxford Nanopore noisy reads (~5% error rate) sequenced from the plasmid mixtures, it solves the cyclic co-linear chaining problem in the cyclic manner.
 
 
 ## Installation
@@ -32,7 +34,7 @@ Options:
     -o DIRECTORY  output directory
     -h            show this message
 ```
-* `FILE1 FILE2 ...` the plasmid components, the order should follow the plasmid structure, cyclic order is allowed.
+* `FILE1 FILE2 ...` consists the plasmid components, the order should follow the plasmid structure, cyclic order is allowed, e.g., `backbone.fa promotor.fa peptide.fa gene.fa terminal.fa terminator.fa`.
 
 ### Output
 * `<out_dir>/qry_total.csv` stores the classification result per read
