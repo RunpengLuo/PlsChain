@@ -17,6 +17,45 @@ def read_idx_file(idx_file: str):
         idx_fd.close()
     return idx_arrs
 
+def display(out_dir):
+    [tota, full, part, cont, uncl] = [0,0,0,0,0]
+    with open(out_dir + "/qry_total.csv", 'r') as fd:
+        for line in fd:
+            tota += 1
+            splited = line.strip().split(",")
+            rid, names = splited[0], splited[1:]
+            name_str = ",".join(names)
+            if "contamination" in name_str:
+                cont += 1
+            elif "fail" in name_str:
+                uncl += 1
+            elif "*" in name_str:
+                part += 1
+            else:
+                full += 1
+        fd.close()
+    
+    print(f"PlsChain\t{tota}\t{full}\t{part}\t{cont}\t{uncl}")
+    
+    [tota, full, part, cont, uncl] = [0,0,0,0,0]
+    with open(out_dir + "/qry_total.fuzzy.csv", 'r') as fd:
+        for line in fd:
+            tota += 1
+            splited = line.strip().split(",")
+            rid, names = splited[0], splited[1:]
+            name_str = ",".join(names)
+            if "contamination" in name_str:
+                cont += 1
+            elif "fail" in name_str:
+                uncl += 1
+            elif "*" in name_str:
+                part += 1
+            else:
+                full += 1
+        fd.close()
+    print(f"PlsChain-Fuzzy\t{tota}\t{full}\t{part}\t{cont}\t{uncl}")
+    return
+
 if __name__ == "__main__":
     if len(sys.argv) != 3: 
         print(f"{sys.argv[0]} <query_dir> <index_dir>")
@@ -35,8 +74,6 @@ if __name__ == "__main__":
     with open(out_dir + "/qry_total.fuzzy.csv", 'w') as fd_fuzzy:
         gb_dict = {}
         gb_fuzzy_dict = {}
-        full_inference_count = 0 # for fuzzy match counts
-        part_inference_count = 0
         with open(qry_total, "r") as fd_total:
             for line in fd_total:
                 splited = line.strip().split(",")
@@ -49,20 +86,11 @@ if __name__ == "__main__":
 
                 fnames = list(names)
                 if '*' in fnames:
-                    fully_inference = True
-                    part_inference = False
                     for i, v in enumerate(list(fnames)):
                         if v == '*':
                             if len(idx_arrs[i]) == 1:
                                 # fuzzy inference
                                 fnames[i] = idx_arrs[i][0]
-                                part_inference = True
-                            else:
-                                fully_inference = False
-                    if fully_inference:
-                        full_inference_count += 1
-                    if part_inference:
-                        part_inference_count += 1
 
                 fname = ",".join(fnames)
                 if fname not in gb_fuzzy_dict:
@@ -72,8 +100,8 @@ if __name__ == "__main__":
 
             fd_total.close()
         fd_fuzzy.close()
-    print(f"#Fuzzy matches, fully/partially resolved: {full_inference_count}/{part_inference_count}")
 
+    display(out_dir)
 
     with open(out_dir + "/qry_total.group.csv", "w") as fd_group:
         fd_group.write(f"total_count,{sum(gb_dict.values())}\n")

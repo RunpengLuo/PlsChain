@@ -30,7 +30,7 @@ Options:
     -o DIRECTORY  output directory
     -h            show this message
 ```
-* `FILE1 FILE2 ...` consists the plasmid components, the order should follow the plasmid structure, cyclic order is allowed, e.g., `backbone.fa promotor.fa peptide.fa gene.fa terminal.fa terminator.fa`.
+* `FILE1 FILE2 ...` consists the library of expression cassettes (with backbone removed), the order should follow the plasmid structure, cyclic order is allowed, e.g., `backbone.fa promotor.fa peptide.fa gene.fa terminal.fa terminator.fa`.
 
 ```sh
 $python scripts/plschain_postprocess.py
@@ -38,7 +38,10 @@ scripts/plschain_postprocess.py <query_dir> <index_dir>
 ```
 * `index_dir`refers to the output directory after running PlsChain with `-i` indexing mode, and `query_dir` refers to the output directory after running PlsChain with `-q` query mode.
 
-### Output
+## Program Output
 * `<out_dir>/qry_total.csv` and `<out_dir>/qry_total.fuzzy.csv` stores the classification result per read with and without fuzzy match opertaions. Each row consists read name, followed by the ordered list of classified components. `*` indicates the corresponding component is not decided by PlsChain. `fail` indicates unclassified record. `contamination` indicates the filtered unclassified record as contamination based on read length.
 
 * `<out_dir>/qry_total.group.csv` and `<out_dir>/qry_total.group.fuzzy.csv` stores the grouped results based on `<out_dir>/qry_total.csv` and `<out_dir>/qry_total.fuzzy.csv`, respectively.
+
+## Simulation
+PlsChain also provides a simulation script `plschain_simulator.py` that simulates sequencing data from a library of expression cassettes. `plschain_simulator.py` operates in three modes: `sub_sampling`, `all_sampling`, and `real_sampling`. `plschain_simulator.py` takes a configuration file and generate index and FASTA file. An example of the configuration file is provided at `scripts/sim_conf.txt`. Please check out the script and provided example for detailed explanation.

@@ -2,16 +2,11 @@
 *.dSYM
 tmp
 .vscode
-*.sh
-k21*
-k15*
-sim*
-result*
 */__pycache__*
-*.txt
-*.fasta
-*/*.tmp
-*/*.ipynb
-gadi/
+
+
+
+# Zenodo
 data/
-all_dataset_output/
+benchmark/
+scripts/benchmark.ipynb
