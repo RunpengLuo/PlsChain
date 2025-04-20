@@ -45,3 +45,8 @@ scripts/plschain_postprocess.py <query_dir> <index_dir>
 
 ## Simulation
 PlsChain also provides a simulation script `plschain_simulator.py` that simulates sequencing data from a library of expression cassettes. `plschain_simulator.py` operates in three modes: `sub_sampling`, `all_sampling`, and `real_sampling`. `plschain_simulator.py` takes a configuration file and generate index and FASTA file. An example of the configuration file is provided at `scripts/sim_conf.txt`. Please check out the script and provided example for detailed explanation.
+
+## Citation
+PlsChain is a companion algorithm published at [Trends in Biotechnology](https://doi.org/10.1016/j.tibtech.2024.11.010). If you use PlsChain in your work, please cite the following publications.
+
+Alexandra Cleaver, Runpeng Luo, Oliver B. Smith, Lydia Murphy, Benjamin Schwessinger, Joseph Brock, High-throughput optimisation of protein secretion in yeast via an engineered biosensor
